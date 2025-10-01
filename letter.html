@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lisa's sweet version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        body {
+            background: linear-gradient(135deg, #f779e5 0%, #a832a8 100%); 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 1s ease;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .chat-header {
+            background: linear-gradient(90deg, #6c008c 0%, #9e00c7 100%); 
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.3rem;
+            position: relative;
+        }
+
+        .profile-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #a832a8, #f779e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #fcf6ff;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            line-height: 1.4;
+        }
+
+        .message.received {
+            background: #e6e6fa;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.sent {
+            background: #9e00c7;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .options-container {
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: white;
+            border-top: 1px solid #d9c7e0;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #9e00c7;
+            color: #9e00c7;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: #9e00c7;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(158, 0, 199, 0.4);
+        }
+
+        .keypad-container {
+            padding: 15px 20px;
+            background: #fdfdff;
+            border-top: 1px solid #d9c7e0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            display: none; 
+        }
+        
+        .pin-display {
+            background: #fff;
+            border: 2px solid #ccc;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 24px;
+            letter-spacing: 5px;
+            min-height: 48px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+        }
+
+        .keypad-btn {
+            background: #e6e6fa; 
+            color: #6c008c;
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .keypad-action {
+            background: #ffafcc; 
+            color: white;
+        }
+        
+        .pin-indicators {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .pin-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #eee; 
+            border: 2px solid #9e00c7;
+            transition: background 0.5s ease;
+        }
+        
+        .pin-indicator.success {
+            background: #4caf50; 
+        }
+        
+        .pin-indicator.active {
+            background: #ffeb3b; 
+            box-shadow: 0 0 8px #ffeb3b;
+        }
+        
+        .letter-container {
+            padding: 20px;
+            background: #fff9f9;
+            border-radius: 15px;
+            margin-top: 10px;
+            border: 3px double #9e00c7; 
+            line-height: 1.6;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .letter-text {
+            font-style: italic;
+            color: #444;
+            white-space: pre-line;
+            font-size: 1.1rem;
+        }
+
+        .hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .heart {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239e00c7'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E") no-repeat center;
+            opacity: 0;
+            animation: float 7s ease-in infinite;
+        }
+
+        @keyframes float {
+            0% {
+                opacity: 0;
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-200vh) rotate(60deg); 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            Khalisya Zahra Putria Rahman
+            <div class="profile-icon">K</div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            </div>
+        <div class="options-container" id="optionsContainer">
+            </div>
+        
+        <div class="keypad-container" id="keypadContainer">
+            <div class="pin-indicators" id="pinIndicators">
+                <div class="pin-indicator" data-step="1"></div>
+                <div class="pin-indicator" data-step="2"></div>
+                <div class="pin-indicator" data-step="3"></div>
+            </div>
+            
+            <div class="pin-display" id="pinDisplay"></div>
+            <div class="password-hint" id="passwordHint"></div>
+            
+            <div class="keypad-grid">
+                <button class="keypad-btn" data-value="1">1</button>
+                <button class="keypad-btn" data-value="2">2</button>
+                <button class="keypad-btn" data-value="3">3</button>
+                <button class="keypad-btn" data-value="4">4</button>
+                <button class="keypad-btn" data-value="5">5</button>
+                <button class="keypad-btn" data-value="6">6</button>
+                <button class="keypad-btn" data-value="7">7</button>
+                <button class="keypad-btn" data-value="8">8</button>
+                <button class="keypad-btn" data-value="9">9</button>
+                <button class="keypad-btn keypad-action" id="clearBtn">⌫</button>
+                <button class="keypad-btn" data-value="0">0</button>
+                <button class="keypad-btn keypad-action" id="enterBtn">✓</button>
+            </div>
+        </div>
+        </div>
+
+    <div class="hearts" id="heartsContainer"></div>
+
+    <script>
+        const chatFlow = {
+            start: {
+                message: "hii who r uu??",
+                options: [
+                    { text: "wtf is this??!", next: "strangerResponse" },
+                    { text: "what iff i am someone very special(?) HAHA", next: "pinPrompt" }
+                ]
+            },
+            strangerResponse: {
+                message: "owch me don't want u bubye",
+                options: [
+                    { text: "BECANDA BECANDA", next: "start" }
+                ]
+            },
+            pinPrompt: {
+                message: "oohh, someone very special? jjur pede bgt sih tp bener ok tebak dulu me trust issue",
+                options: [] 
+            },
+            pinSuccess: {
+                message: "yeaaayy congrats! hehhee ciee benerr, tau gaa aku bikin apaa heheh",
+                options: [
+                    { text: "tauu sih me cenayang", next: "tauResponse" },
+                    { text: "nop me clueless", next: "nopResponse" }
+                ]
+            },
+            passwordFail: {
+                message: "parah bgt sih salah..",
+                options: [
+                    { text: "ih iya iyaa typo itu tadi", next: "start" },
+                ]
+            },
+            tauResponse: {
+                message: "idiiih sok tauu, tapi okelah emg keliatan",
+                options: [
+                    { text: "hehe mana manaa", next: "nopResponse" }
+                ]
+            },
+            nopResponse: {
+                message: "hehe love you <3 spt biasaa i would like to telll u smthh, walaupun sayangaku tida suka bacaa tapi justru itu gasii biar menambah minat literasi aokwokw okkk here we go babyyy",
+                options: [
+                    { text: "alamakk apani...", next: "letter" }
+                ]
+            },
+            letter: {
+                message: "",
+                isLetter: true,
+                letterContent: `haii sayang akuu pacar akuu ka ikhsann,
+
+okaay sebelumnyaa aku minta maaf bikin ka ikhsan kepo, tapi aku tiba-tiba ngide mau buat inii walaupun ngeprompt sih aku kan skill issue tapitapii rate bagus ga hehehehe
+jadi from now on kalo ada sesuatu yg gabisa aku omongin secara langsung, aku bakal pake ini buat ekspresiinnya.
+
+begini sayang, i used to feel useless, coward, lost, selfish sampeee i don't think i deserve to be loved, idk why u still want me tho
+udah jelek malu maluin lagi, do i even deserve u? asli sayang, aku sendiri aja capek ngadepin diri aku yang kesannya gamau keluar dari sarang, ditambah sikap aku yg jelek kalo udh badmood,
+ga ngerhargain ka ikhsan yg di sekitar aku yg berusaha ngehibur aku.. aku pernah ngira emotional control aku udah cukup untuk dibilang baik but i guess i was wrong,
+selagi aku gabisa ngontrol emosi aku di waktu krusial kayak redday sekarang artinya aku blm cukup baik. im a total mess.. asli aku berantakan bgt aku gabisa jelasinnya
+tapi aku gapernah nyeritain ini ke orang lain, satupun, even my mom, ttg kondisi aku yg selalu kalut yg aku gatau apa sumber masalahnya, gatau solusinya, jujur maaf..
+maaf harus ketemu sama aku, maaf harus kejebak sama aku, mana tau kan aku aslinya begini? aku bener-bener gatau, pikiran aku berisik. masalah aku emang ga seberat yg ka ikhsan mungkin punya, 
+tapi this feels heavy to me, my head feels heavy. aku ngerasa ga pantes buat siapapun, aku ngerasa diri aku masi lembek,
+apa karna aku masi blm legal? tapi kan kata ka ikhsan umur ga ngaruh ke maturity :(
+
+udah deh... daripada malah ngebebanin ke ka ikhsannya, i just want to say thanks for embracing me with my flaws.
+u had every reason to leave but u choose to not. i may not feel worthy of ur love no more, but my heart still longs for u to stay :(
+
+please be with me always.. u have become a part of my life, a part i never want to let go of.
+thanks for loving me when i couldnt even love myself :)
+
+last but not least,
+i love you 💕`,
+                options: [
+                    { text: "sayang... aku jawab di wa yaa :)", next: "finalLove" } 
+                ]
+            }
+        };
+
+        const passwords = {
+            1: "121107", 
+            2: "135246", 
+            3: "1708"  
+        };
+
+        let currentState = "start";
+        let isPinAttempt = false; 
+        let currentPinStep = 1; 
+        let currentPinInput = ""; 
+
+        const chatMessages = document.getElementById('chatMessages');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const keypadContainer = document.getElementById('keypadContainer'); 
+        const pinDisplay = document.getElementById('pinDisplay');
+        const passwordHint = document.getElementById('passwordHint');
+        const enterBtn = document.getElementById('enterBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const keypadButtons = document.querySelectorAll('.keypad-btn[data-value]');
+        const pinIndicators = document.querySelectorAll('.pin-indicator');
+        const heartsContainer = document.getElementById('heartsContainer');
+        const chatContainer = document.getElementById('chatContainer');
+
+
+        function initChat() {
+            showMessage(chatFlow.start.message, 'received');
+            showOptions(chatFlow.start.options);
+            createInitialHearts();
+            
+            keypadButtons.forEach(btn => {
+                btn.addEventListener('click', () => appendPinInput(btn.dataset.value));
+            });
+            clearBtn.addEventListener('click', clearPinInput);
+            enterBtn.addEventListener('click', handlePasswordSubmit);
+        }
+        
+        function updatePinDisplay() {
+            pinDisplay.textContent = '•'.repeat(currentPinInput.length);
+        }
+
+        function appendPinInput(value) {
+            if (!isPinAttempt) return;
+            currentPinInput += value;
+            updatePinDisplay();
+        }
+
+        function clearPinInput() {
+            if (!isPinAttempt) return;
+            currentPinInput = currentPinInput.slice(0, -1);
+            updatePinDisplay();
+        }
+        
+        function showPinInput() {
+            isPinAttempt = true;
+            optionsContainer.style.display = 'none';
+            keypadContainer.style.display = 'flex'; 
+            
+            currentPinInput = "";
+            updatePinDisplay();
+            updatePinIndicators();
+            
+            passwordHint.textContent = getPinHint(currentPinStep);
+        }
+        
+        function updatePinIndicators() {
+            pinIndicators.forEach(indicator => {
+                const step = parseInt(indicator.dataset.step);
+                indicator.classList.remove('success', 'active');
+
+                if (step < currentPinStep) {
+                    indicator.classList.add('success'); 
+                } else if (step === currentPinStep) {
+                    indicator.classList.add('active'); 
+                }
+            });
+        }
+        
+        function getPinHint(step) {
+            switch(step) {
+                case 1: return "Step 1: PIN hp akuu";
+                case 2: return "Step 2: PIN laptop pacarr aku";
+                case 3: return "Step 3: jam jadian kita hehe";
+                default: return "";
+            }
+        }
+
+        function handlePasswordSubmit() {
+            if (!isPinAttempt || currentPinInput === "") return;
+
+            const inputValue = currentPinInput;
+            
+            showMessage('•'.repeat(inputValue.length), 'sent'); 
+            
+            if (inputValue === passwords[currentPinStep]) {
+                if (currentPinStep < 3) {
+                    currentPinStep++;
+                    passwordHint.textContent = getPinHint(currentPinStep);
+                    currentPinInput = '';
+                    updatePinDisplay();
+                    updatePinIndicators();
+                    
+                    showMessage(`yeayy benerr, lagi lagii`, 'received');
+                } else {
+                    keypadContainer.style.display = 'none';
+                    optionsContainer.style.display = 'flex';
+                    isPinAttempt = false;
+                    currentPinStep = 1; 
+
+                    const typingDiv = showTypingIndicator();
+                    setTimeout(() => {
+                        hideTypingIndicator(typingDiv);
+                        selectOption('pinSuccess');
+                    }, 1500);
+                }
+            } else {
+                keypadContainer.style.display = 'none';
+                optionsContainer.style.display = 'flex';
+                isPinAttempt = false;
+                currentPinStep = 1; 
+                
+                const typingDiv = showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator(typingDiv);
+                    selectOption('passwordFail');
+                }, 1500);
+            }
+        }
+
+        function showFinalLove() {
+            chatContainer.style.background = 'transparent';
+            chatContainer.style.boxShadow = 'none';
+            chatMessages.innerHTML = '';
+            optionsContainer.style.display = 'none';
+            keypadContainer.style.display = 'none';
+            
+            document.body.style.background = 'linear-gradient(135deg, #ff006e 0%, #ff5c8a 100%)';
+
+            const finalMessageDiv = document.createElement('div');
+            finalMessageDiv.style.textAlign = 'center';
+            finalMessageDiv.style.padding = '50px 20px';
+            finalMessageDiv.style.fontSize = '2.5rem';
+            finalMessageDiv.style.fontWeight = '800';
+            finalMessageDiv.style.color = 'white';
+            finalMessageDiv.style.textShadow = '0 0 10px #6c008c';
+            finalMessageDiv.style.animation = 'scaleUp 1.5s forwards';
+            finalMessageDiv.style.zIndex = '1001';
+            finalMessageDiv.style.position = 'relative';
+
+            finalMessageDiv.innerHTML = "iya sayang..<br>I LOVE YOU SOO MUCH<br>💖✨ ALWAYS! ✨💖";
+            
+            chatContainer.innerHTML = '';
+            chatContainer.appendChild(finalMessageDiv);
+            chatContainer.style.alignItems = 'center';
+            chatContainer.style.justifyContent = 'center';
+            
+            heartsContainer.innerHTML = '';
+            for (let i = 0; i < 70; i++) { 
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.top = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 2 + 's'; 
+                heart.style.animationDuration = Math.random() * 5 + 4 + 's'; 
+                heart.style.opacity = '1';
+                heartsContainer.appendChild(heart);
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = `
+                Khalisya is typing...
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return typingDiv;
+        }
+
+        function hideTypingIndicator(typingDiv) {
+            if (typingDiv && typingDiv.parentNode) {
+                typingDiv.parentNode.removeChild(typingDiv);
+            }
+        }
+
+        function showOptions(options) {
+            optionsContainer.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option.text;
+                button.onclick = () => {
+                    selectOption(option.next);
+                };
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function createInitialHearts() {
+            for (let i = 0; i < 30; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.top = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 7 + 's';
+                heartsContainer.appendChild(heart);
+            }
+        }
+
+        function selectOption(nextState) {
+            if (nextState === 'pinPrompt') {
+                showMessage('what iff i am someone very special(?) HAHA', 'sent');
+                
+                const typingDiv = showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator(typingDiv);
+                    showMessage(chatFlow.pinPrompt.message, 'received');
+                    showPinInput(); 
+                }, 1500);
+                return;
+            }
+
+            if (nextState === 'finalLove') {
+                showMessage("sayang... aku jawab di wa yaa :)", 'sent');
+                setTimeout(() => {
+                    showFinalLove();
+                }, 1000);
+                return;
+            }
+            
+            currentState = nextState;
+            const state = chatFlow[currentState];
+            
+            if (state.isLetter) {
+                showLetter(state.letterContent);
+            } else {
+                showMessage(state.message, 'received');
+            }
+            
+            setTimeout(() => {
+                showOptions(state.options);
+            }, 500);
+        }
+
+        function showLetter(content) {
+            const letterDiv = document.createElement('div');
+            letterDiv.className = 'letter-container';
+            
+            const letterText = document.createElement('div');
+            letterText.className = 'letter-text';
+            letterText.textContent = content;
+            
+            letterDiv.appendChild(letterText);
+            chatMessages.appendChild(letterDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        window.onload = initChat;
+    </script>
+</body>
+</html>
